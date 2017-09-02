@@ -23,3 +23,6 @@ lib/bs
 *.mliast
 .vscode
 .merlin
+
+lib/
+node_modules/
