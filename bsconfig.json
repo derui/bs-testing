@@ -1,0 +1,14 @@
+{
+  "name": "bs-testing",
+  "version": "0.1.0",
+  "sources": [
+    "src",
+    {
+      "dir": "test",
+      "type": "dev"
+    }
+  ],
+  "bs-dependencies" : [
+  ],
+  "generate-merlin": true
+}
