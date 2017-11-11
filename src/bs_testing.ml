@@ -7,25 +7,23 @@ external describe: string -> (unit -> unit [@bs]) -> unit = "" [@@bs.val]
 external it: string -> (unit -> unit [@bs]) -> unit = "" [@@bs.val]
 external itAsync: string -> (mocha_callback -> unit [@bs]) -> unit = "it" [@@bs.val]
 
-type chai
-external chai: chai = "" [@@bs.val]
 
-module Chai_assert = struct
-  type t
+module Assertion = struct
 
-  external assertion: chai -> t = "assert" [@@bs.get]
-
-  external ok: Js.boolean -> unit = "isOk" [@@bs.send.pipe:t]
-  external not_ok: Js.boolean -> unit = "isNotOk" [@@bs.send.pipe:t]
-  external eq: 'a -> 'a -> unit = "deepEqual" [@@bs.send.pipe:t]
-  external neq: 'a -> 'a -> unit = "notDeepEqual" [@@bs.send.pipe:t]
-  external fail: string -> unit = "fail" [@@bs.send.pipe:t]
+  external ok: Js.boolean -> unit = "ok" [@@bs.module "assert"]
+  external eq: 'a -> 'a -> unit = "deepEqual" [@@bs.module "assert"]
+  external neq: 'a -> 'a -> unit = "notDeepEqual" [@@bs.module "assert"]
+  external strict_eq: 'a -> 'a -> unit = "deepStrictEqual" [@@bs.module "assert"]
+  external strict_neq: 'a -> 'a -> unit = "notDeepStrictEqual" [@@bs.module "assert"]
+  external fail: string -> unit = "fail" [@@bs.module "assert"]
 
 end
 
 type assertion =
   | Eq: 'a * 'a -> assertion
   | NotEq: 'a * 'a -> assertion
+  | StrictEq: 'a * 'a -> assertion
+  | NotStrictEq: 'a * 'a -> assertion
   | Ok: bool -> assertion
   | NotOk: bool -> assertion
   | Fail: string -> assertion
@@ -34,14 +32,18 @@ let assert_ok v = Ok v
 let assert_not_ok v = NotOk v
 let assert_eq a b = Eq (a, b)
 let assert_neq a b = NotEq (a, b)
+let assert_strict_eq a b = StrictEq (a, b)
+let assert_not_strict_eq a b = NotStrictEq (a, b)
 let assert_fail message = Fail (message)
 
 let assertion_to_assert = function
-  | Eq (a, b) -> Chai_assert.(assertion chai |> eq a b)
-  | NotEq (a, b) -> Chai_assert.(assertion chai |> neq a b)
-  | Ok v -> Chai_assert.(assertion chai |> ok (Js.Boolean.to_js_boolean v))
-  | NotOk v -> Chai_assert.(assertion chai |> not_ok (Js.Boolean.to_js_boolean v))
-  | Fail v -> Chai_assert.(assertion chai |> fail v)
+  | Eq (a, b) -> Assertion.(eq a b)
+  | NotEq (a, b) -> Assertion.(neq a b)
+  | StrictEq (a, b) -> Assertion.(strict_eq a b)
+  | NotStrictEq (a, b) -> Assertion.(strict_neq a b)
+  | Ok v -> Assertion.(ok (Js.Boolean.to_js_boolean v))
+  | NotOk v -> Assertion.(ok (not v |> Js.Boolean.to_js_boolean))
+  | Fail v -> Assertion.(fail v)
 
 type test =
   | Sync of (string * (unit -> assertion))

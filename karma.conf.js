@@ -1,6 +1,6 @@
 module.exports = function(config) {
   config.set({
-    frameworks: ['mocha', 'chai'],
+    frameworks: ['mocha'],
     files: ['lib/js/test_bundle.js'],
     reporters: ['progress'],
     port: 9876,
